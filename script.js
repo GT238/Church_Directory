@@ -204,11 +204,23 @@ function render() {
     li.appendChild(info);
 
     if (p.phone) {
-      const link = document.createElement("a");
-      link.className = "call-btn";
-      link.href = "tel:" + p.phone.replace(/[^\d+]/g, "");
-      link.textContent = "Call";
-      li.appendChild(link);
+      const digits = p.phone.replace(/[^\d+]/g, "");
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+
+      const textLink = document.createElement("a");
+      textLink.className = "text-btn";
+      textLink.href = "sms:" + digits;
+      textLink.textContent = "Text";
+      actions.appendChild(textLink);
+
+      const callLink = document.createElement("a");
+      callLink.className = "call-btn";
+      callLink.href = "tel:" + digits;
+      callLink.textContent = "Call";
+      actions.appendChild(callLink);
+
+      li.appendChild(actions);
     }
 
     listEl.appendChild(li);

@@ -7,6 +7,8 @@
   --muted: #666666;
   --border: #e0ddd5;
   --call: #2e8b57;
+  --text-action: #3b7dd8;
+  --text-action-dark: #2d63ab;
 }
 
 * { box-sizing: border-box; }
@@ -168,24 +170,40 @@ main {
   white-space: nowrap;
 }
 
-.call-btn {
+.card-actions {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+}
+
+.call-btn, .text-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  background: var(--call);
   color: white;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.9rem;
   border-radius: 999px;
   white-space: nowrap;
 }
 
+.call-btn {
+  background: var(--call);
+}
+
 .call-btn:active {
   background: #256e46;
+}
+
+.text-btn {
+  background: var(--text-action);
+}
+
+.text-btn:active {
+  background: var(--text-action-dark);
 }
 
 .empty-msg {
