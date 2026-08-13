@@ -25,7 +25,7 @@ async function init() {
   }
   statusEl.textContent = "Loading directory...";
   try {
-    const res = await fetch(CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "_ts=" + Date.now());
+    const res = await fetch(CSV_URL, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const text = await res.text();
     people = parseCsv(text);
@@ -37,6 +37,12 @@ async function init() {
     statusEl.textContent = "Couldn't load the directory. Check your connection and try again.";
     console.error(err);
   }
+}
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => console.error("SW registration failed", err));
+  });
 }
 
 function parseCsv(text) {

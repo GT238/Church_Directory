@@ -49,7 +49,9 @@ Then on GitHub: **Settings > Pages > Source: Deploy from branch > main / (root)*
 
 ## 5. Share it with the congregation
 
-Send that link out (bulletin, text, email, QR code). On a phone, opening the link and choosing **"Add to Home Screen"** (Safari share menu on iPhone, or the browser menu on Android) puts an icon on the home screen that opens straight to the directory — no app store involved.
+Send that link out (bulletin, text, email, QR code). On a phone, opening the link and choosing **"Add to Home Screen"** (Safari share menu on iPhone, or the browser menu on Android) puts a real app icon on the home screen that opens full-screen, no browser bar — no app store involved.
+
+The page also works offline once it's been opened at least once: it caches itself and the last-loaded directory data, so it still opens and shows the most recent info with no signal (e.g. in a church basement). It'll silently refresh to the latest data next time there's a connection.
 
 ## Group texting
 
