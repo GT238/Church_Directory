@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="theme-color" content="#3b5f4f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Church Directory">
+<link rel="manifest" href="manifest.json">
+<title>Church Directory</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>Church Directory</h1>
+</header>
+
+<main>
+  <div class="controls">
+    <input type="search" id="searchInput" placeholder="Search by name..." autocomplete="off">
+    <select id="groupFilter">
+      <option value="">All Ministry Groups</option>
+    </select>
+    <a id="textGroupBtn" class="text-group-btn" href="#" aria-disabled="true">Text This Group (0)</a>
+  </div>
+
+  <p id="statusMsg" class="status"></p>
+
+  <ul id="directoryList" class="directory-list"></ul>
+</main>
+
+<footer>
+  <p id="lastLoaded"></p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
