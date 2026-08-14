@@ -15,6 +15,7 @@ const lastLoadedEl = document.getElementById("lastLoaded");
 const textGroupBtn = document.getElementById("textGroupBtn");
 
 let people = [];
+let retryBtn = null;
 
 init();
 
@@ -24,8 +25,9 @@ async function init() {
     return;
   }
   statusEl.textContent = "Loading directory...";
+  hideRetryButton();
   try {
-    const res = await fetch(CSV_URL, { cache: "no-store" });
+    const res = await fetchWithTimeout(CSV_URL, { cache: "no-store" }, 10000);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const text = await res.text();
     people = parseCsv(text);
@@ -35,8 +37,31 @@ async function init() {
     lastLoadedEl.textContent = "Updated " + new Date().toLocaleString();
   } catch (err) {
     statusEl.textContent = "Couldn't load the directory. Check your connection and try again.";
+    showRetryButton();
     console.error(err);
   }
+}
+
+function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+function showRetryButton() {
+  if (!retryBtn) {
+    retryBtn = document.createElement("button");
+    retryBtn.type = "button";
+    retryBtn.className = "retry-btn";
+    retryBtn.textContent = "Retry";
+    retryBtn.addEventListener("click", init);
+    statusEl.insertAdjacentElement("afterend", retryBtn);
+  }
+  retryBtn.hidden = false;
+}
+
+function hideRetryButton() {
+  if (retryBtn) retryBtn.hidden = true;
 }
 
 if ("serviceWorker" in navigator) {

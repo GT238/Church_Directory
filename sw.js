@@ -1,4 +1,4 @@
-const CACHE_NAME = "church-directory-v1";
+const CACHE_NAME = "church-directory-v2";
 
 const APP_SHELL = [
   "./",
