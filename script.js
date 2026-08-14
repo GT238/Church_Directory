@@ -70,6 +70,85 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// ---- Install prompt ----
+const INSTALL_DISMISSED_KEY = "installBannerDismissed";
+let deferredInstallPrompt = null;
+
+function isStandalone() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+function showInstallBanner(kind) {
+  if (localStorage.getItem(INSTALL_DISMISSED_KEY) === "1") return;
+  if (document.getElementById("installBanner")) return;
+
+  const banner = document.createElement("div");
+  banner.id = "installBanner";
+  banner.className = "install-banner";
+
+  const text = document.createElement("span");
+  text.className = "install-banner-text";
+  text.textContent =
+    kind === "android"
+      ? "Install this app for one-tap access."
+      : "Install this app: tap Share ⬆, then \"Add to Home Screen\".";
+  banner.appendChild(text);
+
+  if (kind === "android") {
+    const installBtn = document.createElement("button");
+    installBtn.type = "button";
+    installBtn.className = "install-banner-btn";
+    installBtn.textContent = "Install";
+    installBtn.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      dismissInstallBanner();
+    });
+    banner.appendChild(installBtn);
+  }
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "install-banner-close";
+  closeBtn.textContent = "✕";
+  closeBtn.setAttribute("aria-label", "Dismiss");
+  closeBtn.addEventListener("click", dismissInstallBanner);
+  banner.appendChild(closeBtn);
+
+  document.body.appendChild(banner);
+  document.body.classList.add("has-install-banner");
+}
+
+function dismissInstallBanner() {
+  const banner = document.getElementById("installBanner");
+  if (banner) banner.remove();
+  document.body.classList.remove("has-install-banner");
+  localStorage.setItem(INSTALL_DISMISSED_KEY, "1");
+}
+
+if (!isStandalone()) {
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    showInstallBanner("android");
+  });
+
+  window.addEventListener("appinstalled", dismissInstallBanner);
+
+  if (isIOS()) {
+    showInstallBanner("ios");
+  }
+}
+
 function parseCsv(text) {
   const rows = [];
   let row = [];
