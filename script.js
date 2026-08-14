@@ -317,33 +317,22 @@ function render() {
 
     li.appendChild(info);
 
-    if (p.phone || p.email) {
+    if (p.phone) {
+      const digits = p.phone.replace(/[^\d+]/g, "");
       const actions = document.createElement("div");
       actions.className = "card-actions";
 
-      if (p.phone) {
-        const digits = p.phone.replace(/[^\d+]/g, "");
+      const textLink = document.createElement("a");
+      textLink.className = "text-btn";
+      textLink.href = "sms:" + digits;
+      textLink.textContent = "Text";
+      actions.appendChild(textLink);
 
-        const textLink = document.createElement("a");
-        textLink.className = "text-btn";
-        textLink.href = "sms:" + digits;
-        textLink.textContent = "Text";
-        actions.appendChild(textLink);
-
-        const callLink = document.createElement("a");
-        callLink.className = "call-btn";
-        callLink.href = "tel:" + digits;
-        callLink.textContent = "Call";
-        actions.appendChild(callLink);
-      }
-
-      if (p.email) {
-        const emailLink = document.createElement("a");
-        emailLink.className = "email-btn";
-        emailLink.href = "mailto:" + p.email;
-        emailLink.textContent = "Email";
-        actions.appendChild(emailLink);
-      }
+      const callLink = document.createElement("a");
+      callLink.className = "call-btn";
+      callLink.href = "tel:" + digits;
+      callLink.textContent = "Call";
+      actions.appendChild(callLink);
 
       li.appendChild(actions);
     }

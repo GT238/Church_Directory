@@ -11,7 +11,6 @@
   --text-action: #007aff;
   --text-action-dark: #0062cc;
   --email-action: #ea4335;
-  --email-action-dark: #c5221f;
 }
 
 * { box-sizing: border-box; }
@@ -206,7 +205,7 @@ main {
   gap: 0.4rem;
 }
 
-.call-btn, .text-btn, .email-btn {
+.call-btn, .text-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,14 +224,6 @@ main {
 
 .call-btn:active {
   background: var(--call-dark);
-}
-
-.email-btn {
-  background: var(--email-action);
-}
-
-.email-btn:active {
-  background: var(--email-action-dark);
 }
 
 .text-btn {
