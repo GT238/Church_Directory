@@ -4,7 +4,7 @@
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQN0LfbybPNtdHqlPObZYfknfA4pcUI7PiPpP-RJt99XT-64jC6RVeKKhyZjF6U-NMtTruE3Ge852A0/pub?gid=0&single=true&output=csv";
 
 // Expected column headers in the sheet (case-insensitive, order doesn't matter):
-// First Name | Last Name | Phone | Address | Ministry Group
+// First Name | Last Name | Phone | Email | Address | Ministry Group
 // Ministry Group can hold multiple groups separated by commas, e.g. "Choir, Youth Group"
 
 const searchInput = document.getElementById("searchInput");
@@ -180,6 +180,7 @@ function parseCsv(text) {
     first: headers.findIndex(h => h.includes("first")),
     last: headers.findIndex(h => h.includes("last")),
     phone: headers.findIndex(h => h.includes("phone")),
+    email: headers.findIndex(h => h.includes("email")),
     address: headers.findIndex(h => h.includes("address")),
     group: headers.findIndex(h => h.includes("group") || h.includes("ministry")),
   };
@@ -192,6 +193,7 @@ function parseCsv(text) {
     const firstName = idx.first >= 0 ? (cols[idx.first] || "").trim() : "";
     const lastName = idx.last >= 0 ? (cols[idx.last] || "").trim() : "";
     const phone = idx.phone >= 0 ? (cols[idx.phone] || "").trim() : "";
+    const email = idx.email >= 0 ? (cols[idx.email] || "").trim() : "";
     const address = idx.address >= 0 ? (cols[idx.address] || "").trim() : "";
     const groupsRaw = idx.group >= 0 ? (cols[idx.group] || "").trim() : "";
     const groups = groupsRaw
@@ -200,7 +202,7 @@ function parseCsv(text) {
 
     if (!firstName && !lastName) continue;
 
-    out.push({ firstName, lastName, phone, address, groups });
+    out.push({ firstName, lastName, phone, email, address, groups });
   }
 
   out.sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
@@ -253,7 +255,7 @@ function render() {
     name.className = "person-name";
     name.textContent = `${p.firstName} ${p.lastName}`.trim();
 
-    const hasDetails = Boolean(p.phone || p.address || p.groups.length);
+    const hasDetails = Boolean(p.phone || p.email || p.address || p.groups.length);
     let detailsIcon = null;
     if (hasDetails) {
       detailsIcon = document.createElement("span");
@@ -274,6 +276,14 @@ function render() {
         phoneText.href = "tel:" + p.phone.replace(/[^\d+]/g, "");
         phoneText.textContent = p.phone;
         details.appendChild(phoneText);
+      }
+
+      if (p.email) {
+        const emailText = document.createElement("a");
+        emailText.className = "person-email";
+        emailText.href = "mailto:" + p.email;
+        emailText.textContent = p.email;
+        details.appendChild(emailText);
       }
 
       if (p.address) {
@@ -307,22 +317,33 @@ function render() {
 
     li.appendChild(info);
 
-    if (p.phone) {
-      const digits = p.phone.replace(/[^\d+]/g, "");
+    if (p.phone || p.email) {
       const actions = document.createElement("div");
       actions.className = "card-actions";
 
-      const textLink = document.createElement("a");
-      textLink.className = "text-btn";
-      textLink.href = "sms:" + digits;
-      textLink.textContent = "Text";
-      actions.appendChild(textLink);
+      if (p.phone) {
+        const digits = p.phone.replace(/[^\d+]/g, "");
 
-      const callLink = document.createElement("a");
-      callLink.className = "call-btn";
-      callLink.href = "tel:" + digits;
-      callLink.textContent = "Call";
-      actions.appendChild(callLink);
+        const textLink = document.createElement("a");
+        textLink.className = "text-btn";
+        textLink.href = "sms:" + digits;
+        textLink.textContent = "Text";
+        actions.appendChild(textLink);
+
+        const callLink = document.createElement("a");
+        callLink.className = "call-btn";
+        callLink.href = "tel:" + digits;
+        callLink.textContent = "Call";
+        actions.appendChild(callLink);
+      }
+
+      if (p.email) {
+        const emailLink = document.createElement("a");
+        emailLink.className = "email-btn";
+        emailLink.href = "mailto:" + p.email;
+        emailLink.textContent = "Email";
+        actions.appendChild(emailLink);
+      }
 
       li.appendChild(actions);
     }

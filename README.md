@@ -7,10 +7,10 @@ A free, mobile-friendly phone directory. Search by name, filter by ministry grou
 1. Go to [sheets.google.com](https://sheets.google.com) and create a new spreadsheet.
 2. In row 1, add these exact column headers (order doesn't matter, spelling does):
 
-   | First Name | Last Name | Phone | Address | Ministry Group |
-   |---|---|---|---|---|
+   | First Name | Last Name | Phone | Email | Address | Ministry Group |
+   |---|---|---|---|---|---|
 
-3. Fill in one row per person. For `Phone`, any format is fine (e.g. `555-123-4567`). `Address` is optional — leave blank if you'd rather not list it for someone.
+3. Fill in one row per person. For `Phone`, any format is fine (e.g. `555-123-4567`). `Email` and `Address` are both optional — leave blank if you'd rather not list them for someone.
 4. For `Ministry Group`, separate multiple groups with a comma, e.g. `Choir, Youth Group`. Leave blank if none.
 5. You can use this same field for any grouping you want to filter/text later, not just ministries — e.g. add `Men` or `Women` to that person's list of tags too: `Choir, Men`. No separate "Gender" column needed; it's just another tag.
 

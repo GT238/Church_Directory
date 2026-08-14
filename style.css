@@ -6,9 +6,12 @@
   --text: #222222;
   --muted: #666666;
   --border: #e0ddd5;
-  --call: #2e8b57;
-  --text-action: #3b7dd8;
-  --text-action-dark: #2d63ab;
+  --call: #34c759;
+  --call-dark: #248a3d;
+  --text-action: #007aff;
+  --text-action-dark: #0062cc;
+  --email-action: #ea4335;
+  --email-action-dark: #c5221f;
 }
 
 * { box-sizing: border-box; }
@@ -148,10 +151,19 @@ main {
 
 .person-phone {
   display: block;
-  color: var(--call);
+  color: var(--call-dark);
   text-decoration: none;
   font-size: 0.92rem;
   margin-top: 0.15rem;
+}
+
+.person-email {
+  display: block;
+  color: var(--email-action);
+  text-decoration: none;
+  font-size: 0.92rem;
+  margin-top: 0.15rem;
+  word-break: break-all;
 }
 
 .person-address {
@@ -194,7 +206,7 @@ main {
   gap: 0.4rem;
 }
 
-.call-btn, .text-btn {
+.call-btn, .text-btn, .email-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -212,7 +224,15 @@ main {
 }
 
 .call-btn:active {
-  background: #256e46;
+  background: var(--call-dark);
+}
+
+.email-btn {
+  background: var(--email-action);
+}
+
+.email-btn:active {
+  background: var(--email-action-dark);
 }
 
 .text-btn {
