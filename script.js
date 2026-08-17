@@ -4,8 +4,10 @@
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQN0LfbybPNtdHqlPObZYfknfA4pcUI7PiPpP-RJt99XT-64jC6RVeKKhyZjF6U-NMtTruE3Ge852A0/pub?gid=0&single=true&output=csv";
 
 // Expected column headers in the sheet (case-insensitive, order doesn't matter):
-// First Name | Last Name | Phone | Email | Address | Ministry Group
+// First Name | Last Name | Phone | Email | Address | Ministry Group | Active
 // Ministry Group can hold multiple groups separated by commas, e.g. "Choir, Youth Group"
+// Active is optional: if the column exists, only checked/TRUE rows are shown.
+// If the column doesn't exist at all, everyone shows (nothing to opt into).
 
 const searchInput = document.getElementById("searchInput");
 const groupFilter = document.getElementById("groupFilter");
@@ -183,7 +185,10 @@ function parseCsv(text) {
     email: headers.findIndex(h => h.includes("email")),
     address: headers.findIndex(h => h.includes("address")),
     group: headers.findIndex(h => h.includes("group") || h.includes("ministry")),
+    active: headers.findIndex(h => h.includes("active")),
   };
+
+  const ACTIVE_VALUES = ["true", "yes", "y", "1", "checked"];
 
   const out = [];
   for (let r = 1; r < rows.length; r++) {
@@ -201,6 +206,13 @@ function parseCsv(text) {
       : [];
 
     if (!firstName && !lastName) continue;
+
+    // No Active column at all -> show everyone (backward compatible).
+    // Active column present -> only show rows explicitly checked/true.
+    if (idx.active >= 0) {
+      const activeRaw = (cols[idx.active] || "").trim().toLowerCase();
+      if (!ACTIVE_VALUES.includes(activeRaw)) continue;
+    }
 
     out.push({ firstName, lastName, phone, email, address, groups });
   }
