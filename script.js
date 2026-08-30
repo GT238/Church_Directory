@@ -9,12 +9,25 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQN0LfbybPNtdHq
 // Active is optional: if the column exists, only checked/TRUE rows are shown.
 // If the column doesn't exist at all, everyone shows (nothing to opt into).
 
+// Normalizes to E.164-ish form (+1XXXXXXXXXX). iOS's Messages app can silently
+// drop numbers from a multi-recipient sms: link unless they include a country
+// code, even though bare 10-digit numbers work fine for tel: and single texts.
+function toDialable(phone) {
+  const raw = (phone || "").replace(/[^\d+]/g, "");
+  if (raw.startsWith("+")) return raw;
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 10) return "+1" + digits;
+  if (digits.length === 11 && digits.startsWith("1")) return "+" + digits;
+  return raw;
+}
+
 const searchInput = document.getElementById("searchInput");
 const groupFilter = document.getElementById("groupFilter");
 const listEl = document.getElementById("directoryList");
 const statusEl = document.getElementById("statusMsg");
 const lastLoadedEl = document.getElementById("lastLoaded");
 const textGroupBtn = document.getElementById("textGroupBtn");
+const copyGroupBtn = document.getElementById("copyGroupBtn");
 
 let people = [];
 let retryBtn = null;
@@ -285,7 +298,7 @@ function render() {
       if (p.phone) {
         const phoneText = document.createElement("a");
         phoneText.className = "person-phone";
-        phoneText.href = "tel:" + p.phone.replace(/[^\d+]/g, "");
+        phoneText.href = "tel:" + toDialable(p.phone);
         phoneText.textContent = p.phone;
         details.appendChild(phoneText);
       }
@@ -330,7 +343,7 @@ function render() {
     li.appendChild(info);
 
     if (p.phone) {
-      const digits = p.phone.replace(/[^\d+]/g, "");
+      const digits = toDialable(p.phone);
       const actions = document.createElement("div");
       actions.className = "card-actions";
 
@@ -357,19 +370,40 @@ function render() {
 
 function updateTextGroupButton(filtered) {
   const numbers = filtered
-    .map(p => p.phone.replace(/[^\d+]/g, ""))
+    .map(p => toDialable(p.phone))
     .filter(Boolean);
 
   if (numbers.length === 0) {
     textGroupBtn.textContent = "Text This Group (0)";
     textGroupBtn.href = "#";
     textGroupBtn.setAttribute("aria-disabled", "true");
+    if (copyGroupBtn) copyGroupBtn.hidden = true;
     return;
   }
 
   textGroupBtn.textContent = `Text This Group (${numbers.length})`;
   textGroupBtn.href = "sms:" + numbers.join(",");
   textGroupBtn.removeAttribute("aria-disabled");
+
+  if (copyGroupBtn) {
+    copyGroupBtn.hidden = false;
+    copyGroupBtn.dataset.numbers = numbers.join(", ");
+  }
+}
+
+if (copyGroupBtn) {
+  copyGroupBtn.addEventListener("click", async () => {
+    const numbers = copyGroupBtn.dataset.numbers || "";
+    if (!numbers) return;
+    try {
+      await navigator.clipboard.writeText(numbers);
+      const original = copyGroupBtn.textContent;
+      copyGroupBtn.textContent = "Copied!";
+      setTimeout(() => { copyGroupBtn.textContent = original; }, 1500);
+    } catch (err) {
+      console.error("Clipboard copy failed", err);
+    }
+  });
 }
 
 searchInput.addEventListener("input", render);

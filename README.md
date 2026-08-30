@@ -61,7 +61,7 @@ Filter or search the directory to the people you want (e.g. select the "Men" or 
 A few things to know:
 
 - Everyone in that group text can see each other's phone number and any replies (it's one shared thread, not individual private texts). Fine for a small trusted congregation; keep that in mind for larger or sensitive groups.
-- This uses the `sms:` link standard. It works reliably on iPhone. Most modern Android phones and messaging apps support it too, but behavior can vary slightly by phone/carrier — test it once with a small group before relying on it for something big.
+- This uses the `sms:` link standard, and works reliably on Android. iPhone's Messages app is inconsistent about accepting multiple pre-filled recipients from a web link — it may only work sometimes. If "Text This Group" doesn't open Messages with everyone filled in, a **"Copy Numbers"** button appears next to it (mainly meant for iPhone) — tap it to copy all the numbers, then paste them into the "To:" field of a new message yourself.
 - Very large groups (dozens of people) can be unwieldy as a single group thread and some carriers cap MMS group size. For big broadcasts, sending in smaller batches works better than one huge thread.
 - The button reflects whatever is currently filtered/searched — clear the search and group filter and it'll target everyone with a phone number listed.
 

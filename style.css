@@ -92,6 +92,25 @@ main {
   background: var(--primary-dark);
 }
 
+.copy-group-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.copy-group-btn:active {
+  background: var(--border);
+}
+
 .status {
   text-align: center;
   color: var(--muted);
