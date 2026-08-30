@@ -81,7 +81,25 @@ function hideRetryButton() {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch((err) => console.error("SW registration failed", err));
+    navigator.serviceWorker
+      .register("sw.js")
+      .then((registration) => {
+        // The SW itself is checked for updates on load; explicitly nudge it too,
+        // in case the browser is being conservative about re-checking sw.js.
+        registration.update().catch(() => {});
+      })
+      .catch((err) => console.error("SW registration failed", err));
+  });
+
+  // Once a new service worker takes over (it activates itself immediately via
+  // skipWaiting/clients.claim in sw.js), reload once so the page's own HTML/JS
+  // catches up too -- otherwise people would still be stuck viewing the old
+  // version until they happened to reload or reopen the app themselves.
+  let hasReloadedForUpdate = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hasReloadedForUpdate) return;
+    hasReloadedForUpdate = true;
+    window.location.reload();
   });
 }
 
