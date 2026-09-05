@@ -56,12 +56,14 @@ The page also works offline once it's been opened at least once: it caches itsel
 
 ## Group texting
 
-Filter or search the directory to the people you want (e.g. select the "Men" or "Choir" group), then tap **"Text This Group (N)"**. This opens your phone's own Messages app with everyone's number already added as a recipient, in one shared group thread — you write the message and hit send from your own phone, no extra service or cost.
+Filter or search the directory to the people you want (e.g. select the "Men" or "Choir" group), then the app shows a different action depending on the phone:
 
-A few things to know:
+- **Android**: tap **"Text This Group (N)"** — it opens Messages with everyone's number already added as a recipient, in one shared group thread. You write the message and hit send yourself, no extra service or cost.
+- **iPhone**: Apple's Messages app only ever accepts a single recipient prefilled from a web link — no number formatting or workaround gets around that restriction, it's an iOS limitation, not a bug in the page. So on iPhone the app instead shows **"Copy Numbers for Group Text (N)"** as the main button — tap it to copy every number, then open Messages, start a new message, and paste into the "To:" field yourself. A short reminder of those steps appears right after you copy.
 
-- Everyone in that group text can see each other's phone number and any replies (it's one shared thread, not individual private texts). Fine for a small trusted congregation; keep that in mind for larger or sensitive groups.
-- This uses the `sms:` link standard, and works reliably on Android. iPhone's Messages app is inconsistent about accepting multiple pre-filled recipients from a web link — it may only work sometimes. If "Text This Group" doesn't open Messages with everyone filled in, a **"Copy Numbers"** button appears next to it (mainly meant for iPhone) — tap it to copy all the numbers, then paste them into the "To:" field of a new message yourself.
+A few other things to know:
+
+- Everyone in an Android group text can see each other's phone number and any replies (it's one shared thread, not individual private texts). Fine for a small trusted congregation; keep that in mind for larger or sensitive groups.
 - Very large groups (dozens of people) can be unwieldy as a single group thread and some carriers cap MMS group size. For big broadcasts, sending in smaller batches works better than one huge thread.
 - The button reflects whatever is currently filtered/searched — clear the search and group filter and it'll target everyone with a phone number listed.
 

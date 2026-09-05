@@ -28,6 +28,7 @@ const statusEl = document.getElementById("statusMsg");
 const lastLoadedEl = document.getElementById("lastLoaded");
 const textGroupBtn = document.getElementById("textGroupBtn");
 const copyGroupBtn = document.getElementById("copyGroupBtn");
+const copyGroupHint = document.getElementById("copyGroupHint");
 
 let people = [];
 let retryBtn = null;
@@ -391,7 +392,14 @@ function updateTextGroupButton(filtered) {
     .map(p => toDialable(p.phone))
     .filter(Boolean);
 
+  // iOS Messages reliably ignores all but one recipient from a web link,
+  // regardless of number formatting -- it's a platform restriction, not
+  // something fixable from here. So on iOS, Copy Numbers is the real
+  // primary action, not a hidden fallback nobody notices.
+  const iosMode = isIOS();
+
   if (numbers.length === 0) {
+    textGroupBtn.hidden = iosMode;
     textGroupBtn.textContent = "Text This Group (0)";
     textGroupBtn.href = "#";
     textGroupBtn.setAttribute("aria-disabled", "true");
@@ -399,12 +407,21 @@ function updateTextGroupButton(filtered) {
     return;
   }
 
-  textGroupBtn.textContent = `Text This Group (${numbers.length})`;
-  textGroupBtn.href = "sms:" + numbers.join(",");
-  textGroupBtn.removeAttribute("aria-disabled");
+  if (iosMode) {
+    textGroupBtn.hidden = true;
+  } else {
+    textGroupBtn.hidden = false;
+    textGroupBtn.textContent = `Text This Group (${numbers.length})`;
+    textGroupBtn.href = "sms:" + numbers.join(",");
+    textGroupBtn.removeAttribute("aria-disabled");
+  }
 
   if (copyGroupBtn) {
     copyGroupBtn.hidden = false;
+    copyGroupBtn.textContent = iosMode
+      ? `Copy Numbers for Group Text (${numbers.length})`
+      : "Copy Numbers";
+    copyGroupBtn.className = iosMode ? "copy-group-btn copy-group-btn-primary" : "copy-group-btn";
     copyGroupBtn.dataset.numbers = numbers.join(", ");
   }
 }
@@ -417,7 +434,11 @@ if (copyGroupBtn) {
       await navigator.clipboard.writeText(numbers);
       const original = copyGroupBtn.textContent;
       copyGroupBtn.textContent = "Copied!";
-      setTimeout(() => { copyGroupBtn.textContent = original; }, 1500);
+      if (copyGroupHint) copyGroupHint.hidden = false;
+      setTimeout(() => {
+        copyGroupBtn.textContent = original;
+        if (copyGroupHint) copyGroupHint.hidden = true;
+      }, 6000);
     } catch (err) {
       console.error("Clipboard copy failed", err);
     }
