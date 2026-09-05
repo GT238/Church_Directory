@@ -67,6 +67,10 @@ A few other things to know:
 - Very large groups (dozens of people) can be unwieldy as a single group thread and some carriers cap MMS group size. For big broadcasts, sending in smaller batches works better than one huge thread.
 - The button reflects whatever is currently filtered/searched — clear the search and group filter and it'll target everyone with a phone number listed.
 
+## Printing a paper copy
+
+Tap **"Print Directory"** below the list to print (or save as PDF) whatever's currently showing — if you've searched or filtered to a group first, only that group prints. The printed version automatically shows everyone's phone, email, address, and ministry tags without needing to tap each card open, since there's no tapping on paper. Handy for members without a smartphone.
+
 ## Updating the directory
 
 Just edit the Google Sheet. Changes appear on the site within a minute or two (Google's published CSV refreshes automatically) — no need to touch the code or redeploy.

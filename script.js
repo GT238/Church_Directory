@@ -28,6 +28,7 @@ const statusEl = document.getElementById("statusMsg");
 const lastLoadedEl = document.getElementById("lastLoaded");
 const textGroupBtn = document.getElementById("textGroupBtn");
 const copyGroupBtn = document.getElementById("copyGroupBtn");
+const printBtn = document.getElementById("printBtn");
 const copyGroupHint = document.getElementById("copyGroupHint");
 
 let people = [];
@@ -459,3 +460,7 @@ if (copyGroupBtn) {
 
 searchInput.addEventListener("input", render);
 groupFilter.addEventListener("change", render);
+
+if (printBtn) {
+  printBtn.addEventListener("click", () => window.print());
+}
