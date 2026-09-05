@@ -274,7 +274,11 @@ function render() {
 
   const filtered = people.filter(p => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();
-    const matchesQuery = !query || fullName.includes(query) || p.lastName.toLowerCase().startsWith(query);
+    const matchesQuery =
+      !query ||
+      fullName.includes(query) ||
+      p.lastName.toLowerCase().startsWith(query) ||
+      p.groups.some(g => g.toLowerCase().includes(query));
     const matchesGroup = !groupSel || p.groups.includes(groupSel);
     return matchesQuery && matchesGroup;
   });
@@ -306,6 +310,7 @@ function render() {
       detailsIcon = document.createElement("span");
       detailsIcon.className = "address-indicator";
       detailsIcon.textContent = "▾";
+      detailsIcon.setAttribute("aria-hidden", "true");
       name.appendChild(detailsIcon);
     }
     info.appendChild(name);
@@ -353,10 +358,28 @@ function render() {
       info.appendChild(details);
 
       li.classList.add("has-address");
-      li.addEventListener("click", (e) => {
-        if (e.target.closest("a")) return;
+      li.setAttribute("role", "button");
+      li.setAttribute("tabindex", "0");
+      li.setAttribute("aria-expanded", "false");
+      li.setAttribute("aria-label", `View details for ${p.firstName} ${p.lastName}`.trim());
+
+      const toggleDetails = () => {
         details.hidden = !details.hidden;
         detailsIcon.textContent = details.hidden ? "▾" : "▴";
+        li.setAttribute("aria-expanded", String(!details.hidden));
+      };
+
+      li.addEventListener("click", (e) => {
+        if (e.target.closest("a")) return;
+        toggleDetails();
+      });
+
+      li.addEventListener("keydown", (e) => {
+        if (e.target.closest("a")) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleDetails();
+        }
       });
     }
 
