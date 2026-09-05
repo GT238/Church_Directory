@@ -357,25 +357,28 @@ function render() {
 
       info.appendChild(details);
 
-      li.classList.add("has-address");
-      li.setAttribute("role", "button");
-      li.setAttribute("tabindex", "0");
-      li.setAttribute("aria-expanded", "false");
-      li.setAttribute("aria-label", `View details for ${p.firstName} ${p.lastName}`.trim());
+      // The toggle lives on the name row specifically, not the whole card --
+      // making the entire card (including the phone/email links inside the
+      // expanded details) one giant tap target meant guessing, via
+      // e.target.closest("a"), whether a tap landed on a link or the card.
+      // Mobile browsers don't always resolve that guess the way you'd
+      // expect for imprecise taps, so email links could get swallowed by
+      // the card's toggle instead of opening Mail. Scoping the toggle to
+      // just the name removes the ambiguity entirely.
+      name.classList.add("person-name-toggle");
+      name.setAttribute("role", "button");
+      name.setAttribute("tabindex", "0");
+      name.setAttribute("aria-expanded", "false");
+      name.setAttribute("aria-label", `View details for ${p.firstName} ${p.lastName}`.trim());
 
       const toggleDetails = () => {
         details.hidden = !details.hidden;
         detailsIcon.textContent = details.hidden ? "▾" : "▴";
-        li.setAttribute("aria-expanded", String(!details.hidden));
+        name.setAttribute("aria-expanded", String(!details.hidden));
       };
 
-      li.addEventListener("click", (e) => {
-        if (e.target.closest("a")) return;
-        toggleDetails();
-      });
-
-      li.addEventListener("keydown", (e) => {
-        if (e.target.closest("a")) return;
+      name.addEventListener("click", toggleDetails);
+      name.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           toggleDetails();
