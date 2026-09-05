@@ -59,7 +59,7 @@ The page also works offline once it's been opened at least once: it caches itsel
 Filter or search the directory to the people you want (e.g. select the "Men" or "Choir" group), then the app shows a different action depending on the phone:
 
 - **Android**: tap **"Text This Group (N)"** — it opens Messages with everyone's number already added as a recipient, in one shared group thread. You write the message and hit send yourself, no extra service or cost.
-- **iPhone**: Apple's Messages app only ever accepts a single recipient prefilled from a web link — no number formatting or workaround gets around that restriction, it's an iOS limitation, not a bug in the page. So on iPhone the app instead shows **"Copy Numbers for Group Text (N)"** as the main button — tap it to copy every number, then open Messages, start a new message, and paste into the "To:" field yourself. A short reminder of those steps appears right after you copy.
+- **iPhone**: Apple's Messages app only ever accepts a single recipient prefilled from a web link — no number formatting or workaround gets around that restriction, it's an iOS limitation, not a bug in the page. So on iPhone the app instead shows **"Copy Numbers for Group Text (N)"** — tap it, and it copies every number *and* opens Messages to a blank new message for you in one step. The only thing left to do by hand is tap-and-hold the "To:" field and choose Paste — no website can type into another app's input field for you, on any platform, so that last tap can't be automated away.
 
 A few other things to know:
 

@@ -432,6 +432,18 @@ if (copyGroupBtn) {
     if (!numbers) return;
     try {
       await navigator.clipboard.writeText(numbers);
+
+      // Can't paste into Messages' recipient field for them -- no website can
+      // type into another app's input, on any platform -- but we CAN copy
+      // and open Messages to a blank new message in one tap, so the only
+      // thing left by hand is a long-press-paste into "To:". This has to run
+      // right away, still inside the click handler -- iOS silently blocks
+      // scheme navigation like sms: if it's deferred (e.g. via setTimeout)
+      // past the original tap's user-activation window.
+      if (isIOS()) {
+        window.location.href = "sms:";
+      }
+
       const original = copyGroupBtn.textContent;
       copyGroupBtn.textContent = "Copied!";
       if (copyGroupHint) copyGroupHint.hidden = false;
