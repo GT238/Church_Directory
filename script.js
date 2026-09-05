@@ -184,6 +184,32 @@ if (!isStandalone()) {
   }
 }
 
+// Strips characters that are invisible in a spreadsheet cell but can make a
+// generated tel:/sms:/mailto: link malformed enough that the browser quietly
+// refuses to open it -- zero-width spaces, bidi control marks, a leading
+// BOM, and other control characters, all common leftovers from pasting data
+// in from somewhere else (Breeze, Excel, a PDF, etc).
+function cleanText(value) {
+  const str = value || "";
+  let result = "";
+  for (const ch of str) {
+    const code = ch.codePointAt(0);
+    const isControl = code <= 0x1F || code === 0x7F;
+    const isNbsp = code === 0xA0;
+    const isZeroWidthOrBidi =
+      (code >= 0x200B && code <= 0x200F) ||
+      (code >= 0x202A && code <= 0x202E) ||
+      (code >= 0x2066 && code <= 0x2069);
+    const isBom = code === 0xFEFF;
+    if (isNbsp) {
+      result += " ";
+    } else if (!(isControl || isZeroWidthOrBidi || isBom)) {
+      result += ch;
+    }
+  }
+  return result.trim();
+}
+
 function parseCsv(text) {
   const rows = [];
   let row = [];
@@ -228,12 +254,12 @@ function parseCsv(text) {
     const cols = rows[r];
     if (cols.every(c => !c || !c.trim())) continue;
 
-    const firstName = idx.first >= 0 ? (cols[idx.first] || "").trim() : "";
-    const lastName = idx.last >= 0 ? (cols[idx.last] || "").trim() : "";
-    const phone = idx.phone >= 0 ? (cols[idx.phone] || "").trim() : "";
-    const email = idx.email >= 0 ? (cols[idx.email] || "").trim() : "";
-    const address = idx.address >= 0 ? (cols[idx.address] || "").trim() : "";
-    const groupsRaw = idx.group >= 0 ? (cols[idx.group] || "").trim() : "";
+    const firstName = idx.first >= 0 ? cleanText(cols[idx.first]) : "";
+    const lastName = idx.last >= 0 ? cleanText(cols[idx.last]) : "";
+    const phone = idx.phone >= 0 ? cleanText(cols[idx.phone]) : "";
+    const email = idx.email >= 0 ? cleanText(cols[idx.email]) : "";
+    const address = idx.address >= 0 ? cleanText(cols[idx.address]) : "";
+    const groupsRaw = idx.group >= 0 ? cleanText(cols[idx.group]) : "";
     const groups = groupsRaw
       ? groupsRaw.split(/[,;]/).map(g => g.trim()).filter(Boolean)
       : [];
