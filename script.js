@@ -40,6 +40,7 @@ const saveAllAgainBtn = document.getElementById("saveAllAgainBtn");
 
 let people = [];
 let currentFiltered = [];
+let cardSaveUpdaters = [];
 let retryBtn = null;
 
 init();
@@ -319,6 +320,7 @@ function render() {
 
   currentFiltered = filtered;
   listEl.innerHTML = "";
+  cardSaveUpdaters = [];
 
   if (filtered.length === 0) {
     const li = document.createElement("li");
@@ -391,21 +393,57 @@ function render() {
       }
 
       if (p.phone || p.email) {
+        const saveRow = document.createElement("div");
+        saveRow.className = "save-row";
+
         const saveLink = document.createElement("button");
         saveLink.type = "button";
         saveLink.className = "save-contact-link";
-        const setSaveLabel = () => {
-          saveLink.textContent = isSaved(p)
+        saveRow.appendChild(saveLink);
+
+        // For people already in the phone from before the app existed --
+        // tick once so "Save New Contacts" skips them from then on.
+        const savedCheckLabel = document.createElement("label");
+        savedCheckLabel.className = "save-check";
+        const savedCheck = document.createElement("input");
+        savedCheck.type = "checkbox";
+        savedCheckLabel.appendChild(savedCheck);
+        savedCheckLabel.appendChild(document.createTextNode(" Already in my contacts"));
+        saveRow.appendChild(savedCheckLabel);
+
+        const changedNote = document.createElement("div");
+        changedNote.className = "save-changed-note";
+        changedNote.textContent =
+          "Number changed since you saved them. Save again, then delete or merge the old contact on your phone.";
+
+        const updateSaveControls = () => {
+          const saved = isSaved(p);
+          const changed = numberChanged(p);
+          saveLink.textContent = saved
             ? "Saved to Phone ✓ (save again)"
-            : "Save to Phone Contacts";
+            : changed
+              ? "Save Updated Number"
+              : "Save to Phone Contacts";
+          savedCheck.checked = saved;
+          changedNote.hidden = !changed;
         };
-        setSaveLabel();
+        updateSaveControls();
+        cardSaveUpdaters.push(updateSaveControls);
+
         saveLink.addEventListener("click", () => {
           saveContacts([p], `${p.firstName} ${p.lastName}`);
-          setSaveLabel();
+          updateSaveControls();
           updateSaveGroupButton(currentFiltered);
         });
-        details.appendChild(saveLink);
+        savedCheck.addEventListener("change", () => {
+          if (savedCheck.checked) markSaved([p]);
+          else unmarkSaved(p);
+          updateSaveControls();
+          updateSaveGroupButton(currentFiltered);
+        });
+
+        details.appendChild(saveRow);
+        details.appendChild(changedNote);
       }
 
       info.appendChild(details);
@@ -496,34 +534,72 @@ function updateSaveGroupButton(filtered) {
 // ---- Remember who's been saved from this phone ----
 // The app can't read the phone's contacts, so it keeps its own list of who
 // it has already handed to the phone, to only offer new people next time.
-// Keyed by number (or email) so someone whose number changes gets offered again.
+// Keyed by number (or email) so someone whose number changes gets offered
+// again; the name is kept alongside so that case can be flagged as a change.
 const SAVED_CONTACTS_KEY = "savedContactKeys";
 
 function contactKey(p) {
   return toDialable(p.phone) || (p.email || "").toLowerCase();
 }
 
-function loadSavedKeys() {
+function nameKey(p) {
+  return `${p.firstName} ${p.lastName}`.trim().toLowerCase();
+}
+
+// Returns a Map of contactKey -> nameKey. Earlier versions stored a plain
+// array of keys with no names; those still load, just without change detection.
+function loadSavedContacts() {
   try {
-    return new Set(JSON.parse(localStorage.getItem(SAVED_CONTACTS_KEY) || "[]"));
+    const stored = JSON.parse(localStorage.getItem(SAVED_CONTACTS_KEY) || "[]");
+    if (Array.isArray(stored)) return new Map(stored.map(key => [key, ""]));
+    return new Map(Object.entries(stored));
   } catch (err) {
-    return new Set();
+    return new Map();
   }
 }
 
-let savedKeys = loadSavedKeys();
+let savedContacts = loadSavedContacts();
 
-function isSaved(p) {
-  return savedKeys.has(contactKey(p));
-}
-
-function markSaved(list) {
-  list.forEach(p => savedKeys.add(contactKey(p)));
+function persistSavedContacts() {
   try {
-    localStorage.setItem(SAVED_CONTACTS_KEY, JSON.stringify(Array.from(savedKeys)));
+    localStorage.setItem(SAVED_CONTACTS_KEY, JSON.stringify(Object.fromEntries(savedContacts)));
   } catch (err) {
     console.error("Couldn't remember saved contacts", err);
   }
+}
+
+function isSaved(p) {
+  return savedContacts.has(contactKey(p));
+}
+
+// A saved number counts as "replaced" only when nobody in the directory has
+// it anymore -- otherwise two members who share a name would trip each other.
+function replacedKeysFor(p) {
+  const name = nameKey(p);
+  const currentKeys = new Set(people.map(contactKey));
+  const replaced = [];
+  for (const [key, savedName] of savedContacts) {
+    if (savedName === name && !currentKeys.has(key)) replaced.push(key);
+  }
+  return replaced;
+}
+
+function numberChanged(p) {
+  return !isSaved(p) && replacedKeysFor(p).length > 0;
+}
+
+function markSaved(list) {
+  list.forEach(p => {
+    // Drop their old number so it doesn't keep flagging them as changed.
+    replacedKeysFor(p).forEach(key => savedContacts.delete(key));
+    savedContacts.set(contactKey(p), nameKey(p));
+  });
+  persistSavedContacts();
+}
+
+function unmarkSaved(p) {
+  savedContacts.delete(contactKey(p));
+  persistSavedContacts();
 }
 
 // ---- Save to phone contacts (vCard) ----
@@ -585,9 +661,7 @@ function saveGroup(onlyNew) {
   if (list.length === 0) return;
   saveContacts(list, groupFilter.value || "Church Directory");
   // Re-rendering would collapse any open cards, so refresh labels in place.
-  document.querySelectorAll(".save-contact-link").forEach(btn => {
-    btn.textContent = "Saved to Phone ✓ (save again)";
-  });
+  cardSaveUpdaters.forEach(update => update());
   updateSaveGroupButton(currentFiltered);
   if (saveGroupHint) {
     saveGroupHint.hidden = false;

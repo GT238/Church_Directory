@@ -278,9 +278,38 @@ main {
   white-space: nowrap;
 }
 
+.save-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.save-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.save-check input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--primary);
+}
+
+.save-changed-note {
+  margin-top: 0.35rem;
+  color: var(--primary-dark);
+  font-size: 0.8rem;
+}
+
 .save-contact-link {
   display: block;
-  margin-top: 0.5rem;
   padding: 0.4rem 0.8rem;
   min-height: 2.25rem;
   background: none;
@@ -432,6 +461,9 @@ body.has-install-banner {
     background: #2f382f;
     color: #cfe3d3;
   }
+  .save-changed-note {
+    color: #cfe3d3;
+  }
 }
 
 @media print {
@@ -454,7 +486,8 @@ body.has-install-banner {
   .install-banner,
   .print-btn,
   .address-indicator,
-  .save-contact-link,
+  .save-row,
+  .save-changed-note,
   .card-actions {
     display: none !important;
   }
