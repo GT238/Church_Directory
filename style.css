@@ -140,6 +140,23 @@ main {
   background: var(--primary-dark);
 }
 
+.copy-group-btn[aria-disabled="true"] {
+  pointer-events: none;
+}
+
+.save-all-again-btn {
+  align-self: center;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  padding: 0.3rem 0.5rem;
+  min-height: 2rem;
+  cursor: pointer;
+}
+
 .copy-group-hint {
   margin: 0;
   padding: 0.5rem 0.7rem;
@@ -259,6 +276,25 @@ main {
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
   white-space: nowrap;
+}
+
+.save-contact-link {
+  display: block;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  min-height: 2.25rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.save-contact-link:active {
+  background: var(--border);
 }
 
 .card-actions {
@@ -418,6 +454,7 @@ body.has-install-banner {
   .install-banner,
   .print-btn,
   .address-indicator,
+  .save-contact-link,
   .card-actions {
     display: none !important;
   }

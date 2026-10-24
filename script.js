@@ -9,6 +9,10 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQN0LfbybPNtdHq
 // Active is optional: if the column exists, only checked/TRUE rows are shown.
 // If the column doesn't exist at all, everyone shows (nothing to opt into).
 
+// Shown as the "Company" line on contacts saved to someone's phone, so they're
+// easy to find (and easy to tell apart from personal contacts) later.
+const CHURCH_NAME = "Nations of Praise Fellowship";
+
 // Normalizes to E.164-ish form (+1XXXXXXXXXX). iOS's Messages app can silently
 // drop numbers from a multi-recipient sms: link unless they include a country
 // code, even though bare 10-digit numbers work fine for tel: and single texts.
@@ -30,8 +34,12 @@ const textGroupBtn = document.getElementById("textGroupBtn");
 const copyGroupBtn = document.getElementById("copyGroupBtn");
 const printBtn = document.getElementById("printBtn");
 const copyGroupHint = document.getElementById("copyGroupHint");
+const saveGroupBtn = document.getElementById("saveGroupBtn");
+const saveGroupHint = document.getElementById("saveGroupHint");
+const saveAllAgainBtn = document.getElementById("saveAllAgainBtn");
 
 let people = [];
+let currentFiltered = [];
 let retryBtn = null;
 
 init();
@@ -309,6 +317,7 @@ function render() {
     return matchesQuery && matchesGroup;
   });
 
+  currentFiltered = filtered;
   listEl.innerHTML = "";
 
   if (filtered.length === 0) {
@@ -381,6 +390,24 @@ function render() {
         details.appendChild(groupsWrap);
       }
 
+      if (p.phone || p.email) {
+        const saveLink = document.createElement("button");
+        saveLink.type = "button";
+        saveLink.className = "save-contact-link";
+        const setSaveLabel = () => {
+          saveLink.textContent = isSaved(p)
+            ? "Saved to Phone ✓ (save again)"
+            : "Save to Phone Contacts";
+        };
+        setSaveLabel();
+        saveLink.addEventListener("click", () => {
+          saveContacts([p], `${p.firstName} ${p.lastName}`);
+          setSaveLabel();
+          updateSaveGroupButton(currentFiltered);
+        });
+        details.appendChild(saveLink);
+      }
+
       info.appendChild(details);
 
       // The toggle lives on the name row specifically, not the whole card --
@@ -438,6 +465,142 @@ function render() {
   });
 
   updateTextGroupButton(filtered);
+  updateSaveGroupButton(filtered);
+}
+
+function updateSaveGroupButton(filtered) {
+  if (!saveGroupBtn) return;
+  const savable = filtered.filter(p => p.phone || p.email);
+  const unsaved = savable.filter(p => !isSaved(p));
+  const alreadySaved = savable.length - unsaved.length;
+
+  saveGroupBtn.hidden = savable.length === 0;
+  if (unsaved.length > 0) {
+    saveGroupBtn.textContent = alreadySaved > 0
+      ? `Save ${unsaved.length} New Contact${unsaved.length === 1 ? "" : "s"} to Phone`
+      : groupFilter.value
+        ? `Save This Group to Phone Contacts (${unsaved.length})`
+        : `Save to Phone Contacts (${unsaved.length})`;
+    saveGroupBtn.removeAttribute("aria-disabled");
+  } else {
+    saveGroupBtn.textContent = "All Contacts Saved to This Phone ✓";
+    saveGroupBtn.setAttribute("aria-disabled", "true");
+  }
+
+  if (saveAllAgainBtn) {
+    saveAllAgainBtn.hidden = alreadySaved === 0;
+    saveAllAgainBtn.textContent = `Save all ${savable.length} again (new phone or deleted contacts)`;
+  }
+}
+
+// ---- Remember who's been saved from this phone ----
+// The app can't read the phone's contacts, so it keeps its own list of who
+// it has already handed to the phone, to only offer new people next time.
+// Keyed by number (or email) so someone whose number changes gets offered again.
+const SAVED_CONTACTS_KEY = "savedContactKeys";
+
+function contactKey(p) {
+  return toDialable(p.phone) || (p.email || "").toLowerCase();
+}
+
+function loadSavedKeys() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(SAVED_CONTACTS_KEY) || "[]"));
+  } catch (err) {
+    return new Set();
+  }
+}
+
+let savedKeys = loadSavedKeys();
+
+function isSaved(p) {
+  return savedKeys.has(contactKey(p));
+}
+
+function markSaved(list) {
+  list.forEach(p => savedKeys.add(contactKey(p)));
+  try {
+    localStorage.setItem(SAVED_CONTACTS_KEY, JSON.stringify(Array.from(savedKeys)));
+  } catch (err) {
+    console.error("Couldn't remember saved contacts", err);
+  }
+}
+
+// ---- Save to phone contacts (vCard) ----
+// Group texts only show names for numbers already saved in the phone's
+// contacts, and an sms: link can't carry names. Handing the phone a .vcf
+// file lets it import everyone in one step, so replies show who sent them.
+
+function vcardEscape(value) {
+  return (value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+function toVcard(p) {
+  const fullName = `${p.firstName} ${p.lastName}`.trim();
+  const lines = [
+    "BEGIN:VCARD",
+    "VERSION:3.0",
+    `N:${vcardEscape(p.lastName)};${vcardEscape(p.firstName)};;;`,
+    `FN:${vcardEscape(fullName)}`,
+  ];
+  if (CHURCH_NAME) lines.push(`ORG:${vcardEscape(CHURCH_NAME)}`);
+  if (p.phone) lines.push(`TEL;TYPE=CELL:${toDialable(p.phone)}`);
+  if (p.email) lines.push(`EMAIL;TYPE=INTERNET:${vcardEscape(p.email)}`);
+  // The sheet keeps the whole address in one cell, so it goes in the street
+  // field rather than guessing how to split out city/state/zip.
+  if (p.address) lines.push(`ADR;TYPE=HOME:;;${vcardEscape(p.address)};;;;`);
+  if (p.groups.length) {
+    lines.push(`CATEGORIES:${p.groups.map(vcardEscape).join(",")}`);
+    lines.push(`NOTE:${vcardEscape("Ministry groups: " + p.groups.join(", "))}`);
+  }
+  lines.push("END:VCARD");
+  return lines.join("\r\n");
+}
+
+function saveContacts(list, label) {
+  const vcf = list.map(toVcard).join("\r\n") + "\r\n";
+  const blob = new Blob([vcf], { type: "text/vcard;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const safeName = (label || "contacts").replace(/[^\w\- ]+/g, "").trim() || "contacts";
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = safeName + ".vcf";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  markSaved(list);
+  // Give the browser time to start reading the file before releasing it.
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function saveGroup(onlyNew) {
+  const list = currentFiltered
+    .filter(p => p.phone || p.email)
+    .filter(p => !onlyNew || !isSaved(p));
+  if (list.length === 0) return;
+  saveContacts(list, groupFilter.value || "Church Directory");
+  // Re-rendering would collapse any open cards, so refresh labels in place.
+  document.querySelectorAll(".save-contact-link").forEach(btn => {
+    btn.textContent = "Saved to Phone ✓ (save again)";
+  });
+  updateSaveGroupButton(currentFiltered);
+  if (saveGroupHint) {
+    saveGroupHint.hidden = false;
+    setTimeout(() => { saveGroupHint.hidden = true; }, 15000);
+  }
+}
+
+if (saveGroupBtn) {
+  saveGroupBtn.addEventListener("click", () => saveGroup(true));
+}
+
+if (saveAllAgainBtn) {
+  saveAllAgainBtn.addEventListener("click", () => saveGroup(false));
 }
 
 function updateTextGroupButton(filtered) {
